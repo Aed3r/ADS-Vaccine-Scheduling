@@ -44,7 +44,7 @@ def writeToDocument(dataList):
                 f.write(",".join(i) + "\n")
             else:
                 f.write(i + "\n")
-    with open('onine_instance.txt', 'w') as f:
+    with open('online_instance.txt', 'w') as f:
         for i in dataList[1]:
             if isinstance(i, list):
                 f.write(",".join(i) + "\n")
