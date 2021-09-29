@@ -44,7 +44,7 @@ def offlineSolveByPulp(data):
         problem += PatientsVariablesList[i]["FirstHospital"] <= HospitalNum
         problem += PatientsVariablesList[i]["SecondHospital"] <= HospitalNum
     #the constraints between two patients
-    M = 1000000
+    M = 12345
     AdditionalVariablesList = {} #variables used to create constrains
     AdditionalValueName = ["y1", "y2", "y3", "y4"]
     for i in range(0,data[3]-1):
