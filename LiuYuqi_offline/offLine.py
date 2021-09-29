@@ -11,6 +11,9 @@ def offlineDataRead():
             data.append(list(map(int,f.readline().split(","))))
     return data
 
+"""
+just can handle the instance with lower than 10 patients
+"""
 def offlineSolveByPulp(data):
     #1. create a LP object, find the minimize value
     problem = LpProblem("ADSOfflineProject",sense=LpMinimize)
@@ -46,7 +49,7 @@ def offlineSolveByPulp(data):
     AdditionalValueName = ["y1", "y2", "y3", "y4"]
     for i in range(0,data[3]-1):
         for j in range(i+1,data[3]):
-            # [(patient_2 dose end time >= patient_1 dose start time) and (patient_2 dose start time <= patient_1 dose end time)] or (patient_2 dose hopsital != patient_1 dose hopsital)
+            # [(patient_i dose start time > patient_j dose end time) or (patient_j dose start time > patient_i dose end time)] or (patient_i dose hopsital != patient_j dose hopsital)
             AdditionalVariablesList[str(i) + "_" + str(j)] = {}
             #i_dose1 and j_dose1
             #judge if two interval overlap
