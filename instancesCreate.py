@@ -23,13 +23,13 @@ def normalInstance(first_dose, second_dose, gap, patientsnum):
     onlinedata.append(str(first_dose)), onlinedata.append(str(second_dose)), onlinedata.append(str(gap))
     for i in range(0,patientsnum):
         first_dose_interval_start = np.absolute(np.rint(np.random.normal(0.25*patientsnum,0.1*patientsnum,1)))[0]+1
-        first_dose_interval_end = first_dose_interval_start + first_dose + random.randint(0,3*first_dose)
+        first_dose_interval_end = first_dose_interval_start + first_dose + random.randint(0,3*first_dose)-1
         delay = np.absolute(np.rint(np.random.normal(3*first_dose,3,1)))[0]
         second_dose_interval_length = np.absolute(np.rint(np.random.normal(second_dose,2,1)))[0]+second_dose
         offlinedata.append([str(int(first_dose_interval_start)), str(int(first_dose_interval_end)), str(int(delay)), str(int(second_dose_interval_length))])
     for i in range(0,patientsnum):
-        first_dose_interval_start = np.absolute(np.rint(np.random.normal(0.25*patientsnum,1,1)))[0]+1
-        first_dose_interval_end = first_dose_interval_start + first_dose + random.randint(0,3*first_dose)
+        first_dose_interval_start = np.absolute(np.rint(np.random.normal(0.25*patientsnum,0.1*patientsnum,1)))[0]+1
+        first_dose_interval_end = first_dose_interval_start + first_dose + random.randint(0,3*first_dose)-1
         delay = np.absolute(np.rint(np.random.normal(3*first_dose,3,1)))[0]
         second_dose_interval_length = np.absolute(np.rint(np.random.normal(second_dose,2,1)))[0]+second_dose
         onlinedata.append([str(int(first_dose_interval_start)), str(int(first_dose_interval_end)), str(int(delay)), str(int(second_dose_interval_length))])
@@ -38,7 +38,7 @@ def normalInstance(first_dose, second_dose, gap, patientsnum):
 
 
 def writeToDocument(dataList):
-    with open('offine_instance.txt', 'w') as f:
+    with open('offline_instance.txt', 'w') as f:
         for i in dataList[0]:
             if isinstance(i,list):
                 f.write(",".join(i) + "\n")
@@ -52,6 +52,6 @@ def writeToDocument(dataList):
                 f.write(i + "\n")
 
 if __name__=="__main__":
-    writeToDocument(normalInstance(2, 2, 5, 100))
+    writeToDocument(normalInstance(2, 2, 5, 10))
 
 
