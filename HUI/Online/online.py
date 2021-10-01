@@ -70,13 +70,13 @@ usage: read the data in txt file
 
 def read_data():
     global pt1, pt2, gap, hospitals
-    f = open("instance_online_1.txt", "r")
+    f = open("instance_online_4.txt", "r")
     lines = f.readlines()
     pt1 = int(lines[0])
     pt2 = int(lines[1])
     gap = int(lines[2])
     #  process the first job
-    job_data = lines[3].split("\t")
+    job_data = lines[3].split(",")
     st = int(job_data[0])  # start time of does 1
     et = int(job_data[1])  # end time of does 1
     delay = int(job_data[2])  # patient delay
@@ -87,7 +87,7 @@ def read_data():
     #  process following jobs
     i = 4
     while lines[i] != "X":
-        job_data = lines[i].split("\t")
+        job_data = lines[i].split(",")
         st = int(job_data[0])  # start time of does 1
         et = int(job_data[1])  # end time of does 1
         delay = int(job_data[2])  # patient delay
@@ -118,7 +118,7 @@ def hospital_available(i, s, e, pro_time):
     for k in range(0, len(hospital) - 1):
         temp_slot = [hospital[k][1] + 1, hospital[k + 1][0] - 1]
         if temp_slot[1] - temp_slot[0] + 1 >= pro_time:
-            for m in range(temp_slot[0], temp_slot[1]):
+            for m in range(temp_slot[0], temp_slot[1]+1):
                 if (m >= s) & (m + pro_time - 1 <= e):
                     hospital.append([m, m + pro_time - 1])
                     return [1, m, m + pro_time - 1]
