@@ -1,6 +1,6 @@
 # _*_ coding:utf8 _*_
 from pulp import *
-
+import numpy as np
 
 def offlineDataRead():
     data = []
@@ -10,6 +10,61 @@ def offlineDataRead():
         for i in range(0,data[3]):
             data.append(list(map(int,f.readline().split(","))))
     return data
+
+"""
+for two data Di and Dj, if the Di's time interval [earliest first dose start,latest second dose end] do not overlap with
+Dj's time interval, we can put them into different subset.
+So this function try to spilt data into some smaller subset, aiming to advancing the algorithm
+"""
+def offlineDataPreprocess(data):
+    dataset = []
+    globalList = data[0:3]
+    patientsList = np.array(data[4:len(data)])
+    sortindex = patientsList[:,0].argsort()
+    endtemp = []
+    for index in sortindex:
+        #latest dose1end + gap + delay + dose2interval
+        endtemp.append(patientsList[index][1]+globalList[2]+patientsList[index][2]+patientsList[index][3])
+    latestDose2end = np.array(endtemp)
+    datatemp = []
+    tempst = 0
+    for i in range(1,len(sortindex)):
+        if (patientsList[sortindex[i]][0] > latestDose2end[tempst:i].max()) or (i == len(sortindex) - 1):
+            datatemp.extend(globalList)
+            if (i == len(sortindex) - 1):
+                datatemp.append(i - tempst+1)
+                datatemp.extend(patientsList[sortindex[tempst:i+1]].tolist())
+            else:
+                datatemp.append(i - tempst)
+                datatemp.extend(patientsList[sortindex[tempst:i]].tolist())
+            tempst = i
+            dataset.append(datatemp)
+            datatemp = []
+    return dataset
+
+"""
+main function to slove offline problem
+this function is used to choose a appropriate function for data set
+"""
+def offlineSolve(dataset):
+    result_set = []
+    result = []
+    HospitalNum = 0
+    for da in dataset:
+        print(da)
+        if da[3] <= 10:
+            result_set.append(offlineSolveByPulp(da))
+
+    for re in result_set:
+        result.extend(re[0:len(re)-1])
+        if HospitalNum < re[len(re)-1] :
+            HospitalNum = re[len(re)-1]
+    result.append(HospitalNum)
+    return result
+
+
+
+
 
 """
 just can handle the instance with lower than 10 patients
@@ -130,6 +185,6 @@ def resultShow(resultdata):
     return None
 
 if __name__=="__main__":
-    data = offlineDataRead()
-    result = offlineSolveByPulp(data)
+    dataset = offlineDataPreprocess(offlineDataRead())
+    result = offlineSolve(dataset)
     resultShow(result)
