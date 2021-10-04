@@ -5,7 +5,7 @@ patient's second dose feasibile time interval == second dose processing time
 
 [proof]:
 1.if there are "n" patients, we at most need n hospitals. So divided question into n subquestions:
-	subquestion(i): if there have a scheduling plan to arrange all patients?
+	subquestion(i): if there have a scheduling plan to arrange all patients by i (i=1,2,3，...,n) hospitals?
 	for each subquestion, if there has a input, we can prove this input right or not in o(n) time.
 	So the subquestion is np question.
 hence, the main question can be proved in o(n^2), this is a np question.
