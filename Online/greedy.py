@@ -29,7 +29,7 @@ with open(os.path.join("Instances", inputFileName), 'r') as inputFile:
 # Open output file
 outputFile = None
 if outputFileName != "":
-    open(outputFileName, 'w').close() # Clear the file before use
+    open(os.path.join("Outputs", outputFileName), 'w').close() # Clear the file before use
     outputFile = open(os.path.join("Outputs", outputFileName), 'a')
 
 # Extracted global parameters
@@ -68,19 +68,22 @@ def findSchedule (ri, di, p):
                 return (j, c)
         c += 1
         
-    # If we didn't find an available hospital in [ri, di] we create a new one and schedule [ri-1, ri+p]
+    # If we didn't find an available hospital in [ri, di] we create a new one and schedule [ri, ri+p]
     if not found:
-        hospitals += [[-1]*(ri-1) + [i]*p]
-        return (ri-1, len(hospitals)-1)
+        hospitals += [[-1]*(ri) + [i]*p]
+        return (ri, len(hospitals)-1)
 
 # Pretty prints all schedules in the terminal. Each line represents one hospital
 def printSchedules ():
     global paddingChar
     # We find the length of the longest number to print in order to correctly pad
-    longest = len(str(len(lines)-3))
+    longest = max(len(str(len(lines)-3)), len(str(len(hospitals))))
 
+    c = 1
     for h in hospitals:
-        for schedule in h:
+        print(str(c).rjust(longest, ' ') + '.', end=' ')
+        c += 1
+        for schedule in h[1:]:
             if schedule == -1:
                 print(paddingChar.rjust(longest, paddingChar), end=' ')
             else:
@@ -97,7 +100,7 @@ def outputToFile (f, ti1, mi1, ti2, mi2):
     global outputFile
 
     if f != None:
-        f.write(separator.join([str(ti1), str(mi1), str(ti2), str(mi2)]) + "\n")
+        f.write(separator.join([str(ti1), str(mi1+1), str(ti2), str(mi2+1)]) + "\n")
 
 
 # --- Main loop --- #
@@ -112,9 +115,16 @@ while (lines[i+3].strip() != "X"):
     li = int(patientData[3]) # Length of the second dose feasible interval
 
     # Schedule first dose
+    # ti1 is the time of the first dose for patient i
+    # mi1 is the hospital for the first dose of patient i
     ti1, mi1 = findSchedule(ri, di, p1)
 
+    if i == 9:
+        print('')
+
     # Schedule second dose
+    # ti2 is the time of the second dose for patient i
+    # mi2 is the hospital for the second dose of patient i
     ti2, mi2 = findSchedule(ti1+p1+g+xi, ti1+p1+g+xi+li, p2)
 
     # Write to output file
