@@ -12,7 +12,7 @@ import os
 # Globals
 i = 0 # Patient number. Corresponds to line i+3 in the lines of the file
 hospitals = [] # List of list corresponding to each hospitals schedule
-separator = '\t' # Separator used in the input file
+separator = ',' # Separator used in the input file
 paddingChar = '_' # Character used for padding when printing to the terminal
 inputFileName = "instance_online_1.txt" # Input file name in the Instances folder. Can be set to ""
 outputFileName = "output_1.txt" # Output file name. Set to "" for no output 
