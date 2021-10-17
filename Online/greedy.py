@@ -136,7 +136,7 @@ while (lines[i+3].strip() != "X"):
 
 printSchedules()
 
-# Add the minimum number of hospitals needed add the end of the output file
+# Add the minimum number of hospitals needed at the end of the output file
 if outputFile:
     outputFile.write(str(len(hospitals)))
     outputFile.close()
