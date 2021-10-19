@@ -51,10 +51,10 @@ def offlineSolve(dataset):
     result = []
     HospitalNum = 0
     for da in dataset:
-        print(da)
         if da[3] <= 10:
-            result_set.append(offlineSolveByPulp(da))
-
+            result_set.append(offlineSolveByILP(da))
+        else:
+            result_set.append(offlineSolveByGreedy(da))
     for re in result_set:
         result.extend(re[0:len(re)-1])
         if HospitalNum < re[len(re)-1] :
@@ -62,14 +62,10 @@ def offlineSolve(dataset):
     result.append(HospitalNum)
     return result
 
-
-
-
-
 """
 just can handle the instance with lower than 10 patients
 """
-def offlineSolveByPulp(data):
+def offlineSolveByILP(data):
     #1. create a LP object, find the minimize value
     problem = LpProblem("ADSOfflineProject",sense=LpMinimize)
 
@@ -174,6 +170,85 @@ def offlineSolveByPulp(data):
             resultdata.append([str(int(tempFirstStartTime)), str(int(tempFirstHospital)), str(int(tempSecondStartTime)), str(int(tempSecondHospital))])
     resultdata.append(int(hospialnum))
     return resultdata
+
+def offlineSolveByGreedy(data):
+    hospitalsList = []
+    resultList = []
+    patientDose1FeasibleTimeList = []
+    patientDose2FeasibleTimeList = []
+    #create patients dose 1 and dose 2 feasible time list
+    for i in range(0,data[3]):
+        patientDose1FeasibleTimeList.append([i,data[i+4][0],data[i+4][1]])
+        resultList.append([0])
+    #arrange dose time by Greedy from left to right search dose 1 at start search slot firstly, if not search dose 2 at same slot.
+    hospital = []
+    hospitalNum = 1
+    startsearchslot = 1
+    candidateList = []
+    print(patientDose1FeasibleTimeList)
+    print(resultList)
+    print(data)
+    while(len(patientDose1FeasibleTimeList)+len(patientDose2FeasibleTimeList)>0):
+        #search dose 1 candidate at startsearchslot
+        for i in range(0, len(patientDose1FeasibleTimeList)):
+            # if (startsearchslot + p1 - 1) in patient i feasible time interval, add i into candidate list
+            if (startsearchslot>=patientDose1FeasibleTimeList[i][1]) and (startsearchslot + data[0] - 1<=patientDose1FeasibleTimeList[i][2]):
+                candidateList.append(patientDose1FeasibleTimeList[i])
+        #if candidateList is not empty, we find patient with the smallest length of feasible time interval to arrange
+        if(len(candidateList)>0):
+            minfeasible = 0
+            for i in range(0,len(candidateList)):
+                if((candidateList[i][2]-candidateList[i][1] + 1) < minfeasible) or (minfeasible == 0):
+                    minfeasible = candidateList[i][2]-candidateList[i][1] + 1
+                    patientData = candidateList[i]
+            #arrange patient to hospital and add dose 2 data
+            patientDose2FeasibleTimeList.append([patientData[0],(startsearchslot+data[0]+data[2]+data[4+patientData[0]][2]),(startsearchslot+data[0]+data[2]+data[4+patientData[0]][2]+data[4+patientData[0]][3]-1)])
+            hospital.append([patientData[0],1,startsearchslot,startsearchslot+data[0]-1])
+            patientDose1FeasibleTimeList.remove(patientData)
+            resultList[patientData[0]] = [str(startsearchslot), str(hospitalNum), 0, 0]
+            startsearchslot = startsearchslot + data[0]
+            candidateList = []
+            continue
+        # search dose 2 candidate at startsearchslot
+        for i in range(0, len(patientDose2FeasibleTimeList)):
+            # if (startsearchslot + p2 - 1) in patient i feasible time interval, add i into candidate list
+            if (startsearchslot >= patientDose2FeasibleTimeList[i][1]) and (startsearchslot + data[1] - 1<=patientDose2FeasibleTimeList[i][2]):
+                candidateList.append(patientDose2FeasibleTimeList[i])
+        # if candidateList is not empty, we find patient with the smallest length of feasible time interval to arrange
+        if (len(candidateList) > 0):
+            minfeasible = 0
+            for i in range(0, len(candidateList)):
+                if ((candidateList[i][2] - candidateList[i][1] + 1) < minfeasible) or (minfeasible == 0):
+                    minfeasible = candidateList[i][2] - candidateList[i][1] + 1
+                    patientData = candidateList[i]
+            # arrange patient to hospital and add dose 2 data
+            hospital.append([patientData[0], 2, startsearchslot, startsearchslot + data[1] - 1])
+            patientDose2FeasibleTimeList.remove(patientData)
+            temp = resultList[patientData[0]]
+            resultList[patientData[0]] = [temp[0], temp[1], str(startsearchslot), str(hospitalNum)]
+            startsearchslot = startsearchslot + data[1]
+            candidateList = []
+            continue
+        #if candidate still empty we need change startsearchslot or open new hospital
+        #find the maximum dose 1 deadline
+        maxDose1Deadline = 0
+        for i in range(0,len(patientDose1FeasibleTimeList)):
+            if maxDose1Deadline < patientDose1FeasibleTimeList[i][2]:
+                maxDose1Deadline = patientDose1FeasibleTimeList[i][2]
+        # find the maximum dose 2 deadline
+        maxDose2Deadline = 0
+        for i in range(0, len(patientDose2FeasibleTimeList)):
+            if maxDose2Deadline < patientDose2FeasibleTimeList[i][2]:
+                maxDose2Deadline = patientDose2FeasibleTimeList[i][2]
+        if (startsearchslot+data[0]-1 < maxDose1Deadline) or (startsearchslot+data[1]-1 < maxDose2Deadline):
+            startsearchslot = startsearchslot + 1
+        else:
+            startsearchslot = 0
+            hospitalNum = hospitalNum + 1
+            hospitalsList.append(hospital)
+            hospital = []
+    resultList.append(hospitalNum)
+    return resultList
 
 def resultShow(resultdata):
     with open('offline_result.txt', 'w') as f:
