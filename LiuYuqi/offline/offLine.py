@@ -2,21 +2,46 @@
 from pulp import *
 import numpy as np
 
-def offlineDataRead():
+
+"""
+function name:
+    offlineDataRead
+arguments names and types:
+    filename: 
+        the filename of input data
+function return:
+    data with n+4 lines, the first line is p1, the second line is p2, the third line is g the forth line is n, the
+    rest of lines is the data for each patients
+description:
+    read input data
+"""
+def offlineDataRead(filename):
     data = []
-    with open('offline_instance.txt', 'r') as f:
+    with open(filename, 'r') as f:
         for i in range(0,4):
             data.append(int(f.readline()))
         for i in range(0,data[3]):
             data.append(list(map(int,f.readline().split(","))))
     return data
 
+
 """
-for two data Di and Dj, if the Di's time interval [earliest first dose start,latest second dose end] do not overlap with
-Dj's time interval, we can put them into different subset.
-So this function try to spilt data into some smaller subset, aiming to advancing the algorithm
+function name:
+    offlineDataPreprocess
+arguments names and types:
+    data: 
+        input data
+function return:
+    a set of sub-data blocks, the structure of each blocks is as same as input data
+description:
+    try to divide data into some disjoint sub-data blocks
 """
 def offlineDataPreprocess(data):
+    """
+    for two data Di and Dj, if the Di's time interval [earliest first dose start,latest second dose end] do not overlap with
+    Dj's time interval, we can put them into different subset.
+    So this function try to spilt data into some smaller subset, aiming to advancing the algorithm
+    """
     dataset = []
     globalList = data[0:3]
     patientsList = np.array(data[4:len(data)])
@@ -42,9 +67,18 @@ def offlineDataPreprocess(data):
             datatemp = []
     return dataset
 
+
 """
-main function to slove offline problem
-this function is used to choose a appropriate function for data set
+function name:
+    offlineSolve
+arguments names and types:
+    dataset: 
+        the set of sub-data blocks
+function return:
+    output result
+description:
+    main function to slove offline problem
+    this function is used to choose a appropriate function for data set
 """
 def offlineSolve(dataset):
     result_set = []
@@ -63,7 +97,17 @@ def offlineSolve(dataset):
     return result
 
 """
-just can handle the instance with lower than 10 patients
+function name:
+    offlineSolveByILP
+arguments names and types:
+    data: 
+        a sub-data blocks
+function return:
+    the result of this sub-data blocks
+description:
+    modeling for ILP and use pulp package to find answer
+    function to slove offline problem by ILP
+    just can handle the instance with lower than 10 patients
 """
 def offlineSolveByILP(data):
     #1. create a LP object, find the minimize value
@@ -156,7 +200,6 @@ def offlineSolveByILP(data):
     tempSecondHospital = 0
     tempSecondStartTime = 0
     for v in problem.variables():
-        print(str(v.name) + ":"+str(v.value()))
         if v.name == "HospitalNum":
             hospialnum = v.value() + 1
         elif "FirstHospital" in v.name:
@@ -171,6 +214,19 @@ def offlineSolveByILP(data):
     resultdata.append(int(hospialnum))
     return resultdata
 
+
+"""
+function name:
+    offlineSolveByGreedy
+arguments names and types:
+    data: 
+        a sub-data blocks
+function return:
+    the result of this sub-data blocks
+description:
+    function to slove offline problem by Greedy
+    can handle the instance with large scale
+"""
 def offlineSolveByGreedy(data):
     hospitalsList = []
     resultList = []
@@ -185,9 +241,6 @@ def offlineSolveByGreedy(data):
     hospitalNum = 1
     startsearchslot = 1
     candidateList = []
-    print(patientDose1FeasibleTimeList)
-    print(resultList)
-    print(data)
     while(len(patientDose1FeasibleTimeList)+len(patientDose2FeasibleTimeList)>0):
         #search dose 1 candidate at startsearchslot
         for i in range(0, len(patientDose1FeasibleTimeList)):
@@ -243,13 +296,25 @@ def offlineSolveByGreedy(data):
         if (startsearchslot+data[0]-1 < maxDose1Deadline) or (startsearchslot+data[1]-1 < maxDose2Deadline):
             startsearchslot = startsearchslot + 1
         else:
-            startsearchslot = 0
+            startsearchslot = 1
             hospitalNum = hospitalNum + 1
             hospitalsList.append(hospital)
             hospital = []
     resultList.append(hospitalNum)
     return resultList
 
+
+"""
+function name:
+    resultShow
+arguments names and types:
+    resultdata: 
+        the output result
+function return:
+    a output .txt file
+description:
+    write the output result to 'offline_result.txt'
+"""
 def resultShow(resultdata):
     with open('offline_result.txt', 'w') as f:
         for item in resultdata:
@@ -260,6 +325,6 @@ def resultShow(resultdata):
     return None
 
 if __name__=="__main__":
-    dataset = offlineDataPreprocess(offlineDataRead())
+    dataset = offlineDataPreprocess(offlineDataRead('offline_instance.txt'))
     result = offlineSolve(dataset)
     resultShow(result)
