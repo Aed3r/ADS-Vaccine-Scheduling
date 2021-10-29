@@ -17,7 +17,7 @@ hospitals = [] # List of list corresponding to each hospitals schedule
 patients = 0 # Counts the amount of patients 
 separator = ',' # Separator used in the input file
 paddingChar = '_' # Character used for padding when printing to the terminal
-inputFileName = "Teams/10000.txt" # Input file name in the Instances folder. Can be set to ""
+inputFileName = "5-2.txt" # Input file name in the Instances folder. Can be set to ""
 outputFileName = "output.txt" # Output file name. Set to "" for no output 
 printInTerminal = False # Whether or not to print information in the terminal
 
